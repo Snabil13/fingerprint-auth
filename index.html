@@ -49,7 +49,7 @@
                     document.getElementById("protectedContent").style.display = "block";
 
                     // Send authentication success to Google Apps Script
-                    fetch("https://script.google.com/macros/s/YOUR_DEPLOYED_SCRIPT_ID/exec", {
+                    fetch("https://script.google.com/macros/s/AKfycbwgx0y1ZLAl-CHohWR73T51aOPHbgJJyIDXbkcXn99sMrCSqPOxv2LmZ-Q4Nn8DBYvgIg/exec", {
                         method: "POST",
                         body: JSON.stringify({ status: "authenticated" }),
                         headers: { "Content-Type": "application/json" }
