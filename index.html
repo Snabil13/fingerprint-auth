@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fingerprint Login</title>
+
+    <script>
+        let storedCredential = null;
+
+        async function registerFingerprint() {
+            try {
+                const publicKey = {
+                    challenge: new Uint8Array(32),
+                    rp: { name: "Free WebAuthn Login" },
+                    user: {
+                        id: new Uint8Array(16),
+                        name: "user@example.com",
+                        displayName: "User Name"
+                    },
+                    pubKeyCredParams: [{ type: "public-key", alg: -7 }],
+                    authenticatorSelection: { authenticatorAttachment: "platform" },
+                    timeout: 60000
+                };
+
+                const credential = await navigator.credentials.create({ publicKey });
+
+                if (credential) {
+                    storedCredential = credential;
+                    alert("Fingerprint registered successfully!");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Fingerprint registration failed: " + error.message);
+            }
+        }
+
+        async function authenticateFingerprint() {
+            try {
+                if (!storedCredential) {
+                    alert("No fingerprint registered. Please register first.");
+                    return;
+                }
+
+                const assertion = await navigator.credentials.get({ publicKey: { challenge: new Uint8Array(32) } });
+
+                if (assertion) {
+                    document.getElementById("status").innerText = "Authenticated Successfully!";
+                    document.getElementById("protectedContent").style.display = "block";
+
+                    // Send authentication success to Google Apps Script
+                    fetch("https://script.google.com/macros/s/YOUR_DEPLOYED_SCRIPT_ID/exec", {
+                        method: "POST",
+                        body: JSON.stringify({ status: "authenticated" }),
+                        headers: { "Content-Type": "application/json" }
+                    })
+                    .then(response => response.json())
+                    .then(data => console.log("Server Response:", data))
+                    .catch(error => console.error("Error sending data:", error));
+                } else {
+                    alert("Authentication failed. Try again.");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Authentication failed: " + error.message);
+            }
+        }
+    </script>
+</head>
+<body>
+    <h2>Fingerprint Login System</h2>
+    
+    <button onclick="registerFingerprint()">Register Fingerprint</button>
+    <button onclick="authenticateFingerprint()">Login with Fingerprint</button>
+
+    <h3 id="status"></h3>
+
+    <div id="protectedContent" style="display:none;">
+        <h2>Welcome! You are authenticated.</h2>
+        <p>This is the protected content visible only after fingerprint authentication.</p>
+    </div>
+</body>
+</html>
